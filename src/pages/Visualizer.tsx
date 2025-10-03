@@ -109,16 +109,16 @@ const Visualizer = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="task-priority">Priority</label>
-                  <select id="task-priority">
+                  <select id="task-priority" defaultValue="medium">
                     <option value="low">Low</option>
-                    <option value="medium" selected>Medium</option>
+                    <option value="medium">Medium</option>
                     <option value="high">High</option>
                   </select>
                 </div>
                 <div className="form-group">
                   <label htmlFor="task-status">Status</label>
-                  <select id="task-status">
-                    <option value="not-started" selected>Not Started</option>
+                  <select id="task-status" defaultValue="not-started">
+                    <option value="not-started">Not Started</option>
                     <option value="in-progress">In Progress</option>
                     <option value="completed">Completed</option>
                   </select>
