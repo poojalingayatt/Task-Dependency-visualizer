@@ -10,7 +10,9 @@ const Visualizer = () => {
     // Load the external stylesheets and scripts
     const styleLink = document.createElement("link");
     styleLink.rel = "stylesheet";
-    styleLink.href = "/style.css";
+    // Resolve against Vite base URL to work under subpaths
+    const base = (import.meta as any).env?.BASE_URL || '/';
+    styleLink.href = `${base}style.css`;
     document.head.appendChild(styleLink);
 
     // Load Cytoscape and dependencies
@@ -30,7 +32,8 @@ const Visualizer = () => {
         await loadScript("https://unpkg.com/dagre@0.8.5/dist/dagre.min.js");
         await loadScript("https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js");
         await loadScript("https://unpkg.com/dayjs@1.10.7/dayjs.min.js");
-        await loadScript("/script.js");
+        const base = (import.meta as any).env?.BASE_URL || '/';
+        await loadScript(`${base}script.js`);
       } catch (error) {
         console.error("Error loading scripts:", error);
       }

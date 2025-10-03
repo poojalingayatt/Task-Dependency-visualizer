@@ -31,27 +31,64 @@ const zoomWeeks = document.getElementById('zoom-weeks');
 const zoomMonths = document.getElementById('zoom-months');
 const exportGraph = document.getElementById('export-graph');
 
+// Inline SVG icon set (Lucide-like)
+const Icons = {
+  pencil: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>',
+  trash: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
+  sun: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>',
+  moon: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+  plus: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
+  download: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  upload: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+  broom: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M20 3L9 14"/><path d="M9 14l-3 7-3-3 7-4z"/></svg>',
+  globe: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 010 20a15.3 15.3 0 010-20z"/></svg>',
+  calendar: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  calendarRange: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="7" y="14" width="4" height="4"/><rect x="13" y="14" width="4" height="4"/></svg>',
+  hospital: '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14"/><path d="M12 8v8"/><path d="M8 12h8"/><path d="M3 21h18"/></svg>'
+};
+
+function setDarkToggleLabel(isDark) {
+  if (!darkModeToggle) return;
+  darkModeToggle.innerHTML = isDark ? `${Icons.sun} Light` : `${Icons.moon} Dark`;
+}
+
 // Cytoscape instance for graph visualization
 let cy;
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', () => {
-  initializeCytoscape();
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('reset') === '1') {
-    localStorage.removeItem('taskDependencyVisualizer');
+(function() {
+  function bootstrap() {
+    // Guard against multiple initializations (e.g., re-entering the route)
+    if (typeof window !== 'undefined') {
+      if (window.__TDV_BOOTSTRAPPED) return;
+      window.__TDV_BOOTSTRAPPED = true;
+    }
+
+    initializeCytoscape();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reset') === '1') {
+      localStorage.removeItem('taskDependencyVisualizer');
+    }
+    loadTasksFromLocalStorage();
+    // Optionally load demo data only when explicitly requested via ?demo=1
+    const shouldLoadDemo = tasks.length === 0 && params.get('demo') === '1';
+    if (shouldLoadDemo) {
+      loadDemoData();
+    }
+    renderTasks();
+    updateDependencySelects();
+    // Setup event listeners
+    setupEventListeners();
   }
-  loadTasksFromLocalStorage();
-  // Optionally load demo data only when explicitly requested via ?demo=1
-  const shouldLoadDemo = tasks.length === 0 && params.get('demo') === '1';
-  if (shouldLoadDemo) {
-    loadDemoData();
+
+  // Run immediately if DOM is ready, otherwise wait for DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrap);
+  } else {
+    // DOM is already ready, run bootstrap immediately
+    bootstrap();
   }
-  renderTasks();
-  updateDependencySelects();
-  // Setup event listeners
-  setupEventListeners();
-});
+})();
 
 // Initialize Cytoscape for graph visualization
 function initializeCytoscape() {
@@ -197,27 +234,39 @@ function setupEventListeners() {
 
   // Dark mode toggle
   darkModeToggle.addEventListener('click', toggleDarkMode);
+  // Initialize button labels/icons based on current theme
+  setDarkToggleLabel(document.body.getAttribute('data-theme') === 'dark');
 
   // Export/Import functionality
+  exportBtn.innerHTML = `${Icons.download} Export`;
+  importBtn.innerHTML = `${Icons.upload} Import`;
   exportBtn.addEventListener('click', exportData);
   importBtn.addEventListener('click', () => importFile.click());
   importFile.addEventListener('change', handleFileImport);
 
   // Demo templates
+  loadWebsiteTemplate.innerHTML = `${Icons.globe} Website`;
+  loadEventTemplate.innerHTML = `${Icons.calendar} Event`;
+  loadHospitalTemplate.innerHTML = `${Icons.hospital} Hospital`;
   loadWebsiteTemplate.addEventListener('click', () => loadTemplate('website'));
   loadEventTemplate.addEventListener('click', () => loadTemplate('event'));
   loadHospitalTemplate.addEventListener('click', () => loadTemplate('hospital'));
 
   // Timeline zoom controls
+  zoomDays.innerHTML = `${Icons.sun} Days`;
+  zoomWeeks.innerHTML = `${Icons.calendar} Weeks`;
+  zoomMonths.innerHTML = `${Icons.calendarRange} Months`;
   zoomDays.addEventListener('click', () => setTimelineZoom('days'));
   zoomWeeks.addEventListener('click', () => setTimelineZoom('weeks'));
   zoomMonths.addEventListener('click', () => setTimelineZoom('months'));
 
   // Export graph
+  exportGraph.innerHTML = `${Icons.download} Export Graph`;
   exportGraph.addEventListener('click', exportGraphAsImage);
 
   const clearBtn = document.getElementById('clear-tasks-btn');
   if (clearBtn) {
+    clearBtn.innerHTML = `${Icons.broom} Clear All`;
     clearBtn.addEventListener('click', function() {
       if (confirm('Are you sure you want to delete all tasks? This cannot be undone.')) {
         tasks = [];
@@ -227,6 +276,10 @@ function setupEventListeners() {
       }
     });
   }
+
+  // Enhance submit button label
+  const submitBtn = document.querySelector('#task-form button[type="submit"]');
+  if (submitBtn) submitBtn.innerHTML = `${Icons.plus} Add Task`;
 }
 
 // Handle task form submission
@@ -401,8 +454,8 @@ function renderTasks() {
       <h3>
         ${task.name}
         <div class="task-actions">
-          <button type="button" class="edit" data-id="${task.id}">✏️</button>
-          <button type="button" class="delete" data-id="${task.id}">🗑️</button>
+          <button type="button" class="edit" aria-label="Edit task" title="Edit" data-id="${task.id}">${Icons.pencil}</button>
+          <button type="button" class="delete" aria-label="Delete task" title="Delete" data-id="${task.id}">${Icons.trash}</button>
         </div>
       </h3>
       <div class="task-meta">
@@ -889,10 +942,10 @@ function toggleDarkMode() {
 
   if (isDark) {
     body.removeAttribute('data-theme');
-    darkModeToggle.textContent = '🌙 Dark';
+    setDarkToggleLabel(false);
   } else {
     body.setAttribute('data-theme', 'dark');
-    darkModeToggle.textContent = '☀️ Light';
+    setDarkToggleLabel(true);
   }
 
   // Update Cytoscape background if possible
