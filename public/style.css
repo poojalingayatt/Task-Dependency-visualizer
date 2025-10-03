@@ -605,10 +605,11 @@ footer {
   }
 }
 
-.critical {
-  background-color: var(--secondary-color) !important;
-  color: #ffffff !important;
-  border-color: var(--secondary-color) !important;
+/* Scoped chip helper (kept for potential future use) */
+.critical-chip {
+  background-color: var(--task-critical);
+  color: #ffffff;
+  border-color: var(--task-critical);
   box-shadow: 0 4px 14px rgba(71,184,224,0.12);
 }
 
