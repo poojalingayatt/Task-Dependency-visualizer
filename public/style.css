@@ -63,6 +63,12 @@ body {
   background-color: var(--bg-primary);
   transition: var(--transition);
 }
+
+/* Headings */
+h1 { font-size: 1.875rem; font-weight: 800; }
+h2 { font-size: 1.375rem; font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 700; }
+
 /* Layout */
 .container {
   display: grid;
@@ -129,6 +135,7 @@ main {
   align-items: center;
   margin-bottom: 1rem;
 }
+.section-header h2 { font-size: 1.5rem; font-weight: 800; }
 .demo-templates {
   display: flex;
   gap: 0.5rem;
@@ -272,6 +279,8 @@ small {
   margin-bottom: 0.5rem;
   display: flex;
   justify-content: space-between;
+  font-weight: 800;
+  font-size: 1.1rem;
 }
 .task-actions {
   display: flex;
@@ -482,8 +491,9 @@ small {
   text-align: center;
 }
 .timeline-task .task-name {
-  font-weight: 500;
+  font-weight: 800;
   margin-bottom: 0.2rem;
+  font-size: 0.95rem;
 }
 .timeline-task .task-priority,
 .timeline-task .task-status {
@@ -556,6 +566,7 @@ small {
   box-shadow: var(--box-shadow);
   position: relative;
 }
+.modal-content h2 { font-size: 1.5rem; font-weight: 800; }
 .close-btn {
   position: absolute;
   right: 1.5rem;
