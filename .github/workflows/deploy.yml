@@ -1,3 +1,4 @@
+# Deploy to GitHub Pages (for Create-React-App)
 name: Deploy to GitHub Pages
 
 on:
@@ -32,7 +33,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./build     # <-- use build for CRA
 
   deploy:
     needs: build
